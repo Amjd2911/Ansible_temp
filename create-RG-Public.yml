@@ -71,18 +71,19 @@
             primary: true
             public_ip_address_name: "{{ public_ip_name }}" # <--- Le paramètre manquant
 
-    - name: Create VM
+    - name: Create VM (Ubuntu 24.04 ARM64)
       azure_rm_virtualmachine:
         resource_group: "{{ resource_group_name }}"
         name: "{{ vm_name }}"
-        vm_size: Standard_B1s
+        vm_size: "Standard_B2ats_v2" 
         admin_username: "{{ admin_username }}"
         admin_password: "{{ admin_password }}"
         network_interfaces: "{{ nic_name }}"
+        managed_disk_type: Standard_LRS 
+
         image:
           publisher: Canonical
           offer: ubuntu-24_04-lts
           sku: "server"
           version: latest
-          vm_size: "Standard_B2ats_v2"
         location: "{{ location }}"
