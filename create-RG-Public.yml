@@ -14,7 +14,7 @@
     nic_name: myNIC
     vm_name: myVM
     admin_username: azureuser
-    admin_password: YourSecurePassword123!
+    ssh_key_name: Justatestsuppr_key  # Nom de la clé SSH dans Azure
 
   tasks:
     - name: Create resource group
@@ -77,9 +77,15 @@
         name: "{{ vm_name }}"
         vm_size: "Standard_B2ats_v2" 
         admin_username: "{{ admin_username }}"
-        admin_password: "{{ admin_password }}"
+        ssh_password_enabled: false
+        ssh_public_keys:
+          - path: "/home/{{ admin_username }}/.ssh/authorized_keys"
+            key_data: "{{ lookup('file', '~/.ssh/Justatestsuppr_key.pub') }}"
         network_interfaces: "{{ nic_name }}"
         managed_disk_type: Standard_LRS 
+        tags:
+          environment: prod
+          ansible_managed: true
 
         image:
           publisher: Canonical
