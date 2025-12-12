@@ -1,5 +1,5 @@
 ---
-- name: Créer une VM Azure avec Public IP (Corrected)
+- name: Create Azure VM with Public IP (Standard SKU)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -10,13 +10,15 @@
     vnet_name: myVNet
     subnet_name: mySubnet
     public_ip_name: myPublicIP
-    nic_name: myNic
+    nsg_name: myNSG
+    nic_name: myNIC
     vm_name: myVM
     admin_username: azureuser
+    # NOTE: En prod, utilise Ansible Vault.
     admin_password: YourSecurePassword123!
 
   tasks:
-    - name: Create a resource group
+    - name: Create resource group
       azure_rm_resourcegroup:
         name: "{{ resource_group_name }}"
         location: "{{ location }}"
@@ -28,30 +30,45 @@
         address_prefixes: "10.0.0.0/16"
         location: "{{ location }}"
 
-    - name: Add subnet
+    - name: Create subnet
       azure_rm_subnet:
         resource_group: "{{ resource_group_name }}"
         name: "{{ subnet_name }}"
         virtual_network: "{{ vnet_name }}"
         address_prefix: "10.0.1.0/24"
 
-    - name: Create public IP address
+    - name: Create Public IP (Standard SKU)
       azure_rm_publicipaddress:
         resource_group: "{{ resource_group_name }}"
-        allocation_method: Static
         name: "{{ public_ip_name }}"
         location: "{{ location }}"
+        sku: Standard            # Fix: Required to bypass Basic quota limit
+        allocation_method: Static # Fix: Required for Standard SKU
 
-    - name: Create NIC with Public IP
+    - name: Create Network Security Group (NSG)
+      azure_rm_securitygroup:
+        resource_group: "{{ resource_group_name }}"
+        name: "{{ nsg_name }}"
+        location: "{{ location }}"
+        rules:
+          - name: AllowSSH
+            protocol: Tcp
+            destination_port_range: 22
+            access: Allow
+            priority: 1001
+            direction: Inbound
+
+    - name: Create NIC (Link IP & NSG)
       azure_rm_networkinterface:
         resource_group: "{{ resource_group_name }}"
         name: "{{ nic_name }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
-        public_ip_address_name: "{{ public_ip_name }}"
+        public_ip_address_name: "{{ public_ip_name }}" # Fix: Correct parameter name
+        security_group: "{{ nsg_name }}"               # Fix: Attach NSG for SSH access
         location: "{{ location }}"
 
-    - name: Create VM
+    - name: Create Virtual Machine
       azure_rm_virtualmachine:
         resource_group: "{{ resource_group_name }}"
         name: "{{ vm_name }}"
@@ -65,3 +82,7 @@
           sku: '8-stream'
           version: latest
         location: "{{ location }}"
+
+    - name: Output Public IP
+      debug:
+        msg: "Public IP created: {{ public_ip_name }} (Check Azure Portal for exact IP as it is Static Standard)"
