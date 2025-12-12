@@ -56,48 +56,34 @@
         resource_group: "{{ resource_group_name }}"
         name: "{{ nsg_name }}"
         location: "{{ location }}"
-
-    - name: Add SSH rule to NSG
-      azure_rm_securitygrouprule:
-        resource_group: "{{ resource_group_name }}"
-        security_group_name: "{{ nsg_name }}"
-        name: AllowSSH
-        protocol: Tcp
-        source_address_prefix: '*'
-        source_port_range: '*'
-        destination_address_prefix: '*'
-        destination_port_range: '22'
-        access: Allow
-        priority: 1001
-        direction: Inbound
-
-    - name: Add HTTP rule to NSG
-      azure_rm_securitygrouprule:
-        resource_group: "{{ resource_group_name }}"
-        security_group_name: "{{ nsg_name }}"
-        name: AllowHTTP
-        protocol: Tcp
-        source_address_prefix: '*'
-        source_port_range: '*'
-        destination_address_prefix: '*'
-        destination_port_range: '80'
-        access: Allow
-        priority: 1002
-        direction: Inbound
-
-    - name: Add HTTPS rule to NSG
-      azure_rm_securitygrouprule:
-        resource_group: "{{ resource_group_name }}"
-        security_group_name: "{{ nsg_name }}"
-        name: AllowHTTPS
-        protocol: Tcp
-        source_address_prefix: '*'
-        source_port_range: '*'
-        destination_address_prefix: '*'
-        destination_port_range: '443'
-        access: Allow
-        priority: 1003
-        direction: Inbound
+        rules:
+          - name: AllowSSH
+            protocol: Tcp
+            source_address_prefix: '*'
+            source_port_range: '*'
+            destination_address_prefix: '*'
+            destination_port_range: '22'
+            access: Allow
+            priority: 1001
+            direction: Inbound
+          - name: AllowHTTP
+            protocol: Tcp
+            source_address_prefix: '*'
+            source_port_range: '*'
+            destination_address_prefix: '*'
+            destination_port_range: '80'
+            access: Allow
+            priority: 1002
+            direction: Inbound
+          - name: AllowHTTPS
+            protocol: Tcp
+            source_address_prefix: '*'
+            source_port_range: '*'
+            destination_address_prefix: '*'
+            destination_port_range: '443'
+            access: Allow
+            priority: 1003
+            direction: Inbound
 
     # C'est ici que la syntaxe change selon ta demande
     - name: Create NIC with ip_configurations
