@@ -9,15 +9,21 @@
     location: francecentral
     vnet_name: myVNet
     subnet_name: mySubnet
-    public_ip_name: myPublicIP
-    nsg_name: myNSG
-    nic_name: myNIC
-    vm_name: myVM
+    # Générer un identifiant unique basé sur la date/heure
+    unique_id: "{{ ansible_date_time.epoch }}"
+    public_ip_name: "myPublicIP-{{ unique_id }}"
+    nsg_name: "myNSG-{{ unique_id }}"
+    nic_name: "myNIC-{{ unique_id }}"
+    vm_name: "myVM-{{ unique_id }}"
     admin_username: azureuser
     # Clé publique SSH - À définir dans les Extra Variables du Job Template AAP
     ssh_public_key: ""
 
   tasks:
+    - name: Gather facts to get timestamp
+      setup:
+        gather_subset:
+          - date_time
     - name: Create resource group
       azure_rm_resourcegroup:
         name: "{{ resource_group_name }}"
