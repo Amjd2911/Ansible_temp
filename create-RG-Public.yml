@@ -85,8 +85,8 @@
         network_interfaces: "{{ nic_name }}"
         managed_disk_type: Standard_LRS 
         tags:
-          environment: prod
-          ansible_managed: true
+          environment: "prod"
+          ansible_managed: "true"
         image:
           publisher: Canonical
           offer: ubuntu-24_04-lts
