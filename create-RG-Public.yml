@@ -80,8 +80,9 @@
         admin_password: "{{ admin_password }}"
         network_interfaces: "{{ nic_name }}"
         image:
-          offer: CentOS
-          publisher: OpenLogic
-          sku: '8-stream'
+          publisher: Canonical
+          offer: ubuntu-24_04-lts
+          sku: "server"
           version: latest
+          vm_size: "Standard_B2ats_v2"
         location: "{{ location }}"
