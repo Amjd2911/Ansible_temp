@@ -2,6 +2,8 @@
 - hosts: all
   gather_facts: true
   become: true
+  collections:
+    - community.docker
 
   roles:
     - role: docker
@@ -10,6 +12,8 @@
 - hosts: all
   gather_facts: false
   become: true
+  collections:
+    - community.docker
 
   vars:
     # Tell Ansible modules (docker_*) to use the python from our venv
