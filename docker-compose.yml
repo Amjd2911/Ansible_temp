@@ -1,0 +1,93 @@
+services:
+  database:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: myapp_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: secure_password
+    networks:
+      - db-network
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app_user -d myapp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend/simple-api
+      dockerfile: Dockerfile
+    container_name: backend-api
+    networks:
+      - db-network
+      - backend-network
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/myapp_db
+      SPRING_DATASOURCE_USERNAME: app_user
+      SPRING_DATASOURCE_PASSWORD: secure_password
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  httpd:
+    build:
+      context: ./httpd
+      dockerfile: Dockerfile
+    container_name: web-server
+    ports:
+      - "80:80"
+    networks:
+      - backend-network
+      - proxy-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer-db
+    ports:
+      - "8090:8080"
+    networks:
+      - db-network
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: database
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    networks:
+      - proxy-network
+    restart: unless-stopped
+
+networks:
+  db-network:
+    driver: bridge
+  backend-network:
+    driver: bridge
+  proxy-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local

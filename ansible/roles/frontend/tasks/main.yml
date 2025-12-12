@@ -1,0 +1,13 @@
+---
+# Tasks for deploying the frontend container
+
+- name: Launch frontend
+  community.docker.docker_container:
+    name: frontend
+    image: "amjd2911/tp-devops-frontend:latest"
+    state: started
+    pull: true
+    recreate: true
+    networks:
+      - name: proxy-network
+    restart_policy: always

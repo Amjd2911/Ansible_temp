@@ -1,0 +1,18 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for app
+- name: Launch app container
+  docker_container:
+    name: backend
+    image: "amjd2911/tp-devops-simple-api:latest"
+    state: started
+    pull: true
+    recreate: true
+    restart_policy: always
+    networks:
+      - name: db-network
+      - name: backend-network
+    env:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://database:5432/myapp_db"
+      SPRING_DATASOURCE_USERNAME: "app_user"
+      SPRING_DATASOURCE_PASSWORD: "secure_password"

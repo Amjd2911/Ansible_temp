@@ -1,0 +1,16 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for proxy
+- name: Launch proxy container
+  docker_container:
+    name: httpd
+    image: "amjd2911/tp-devops-httpd:latest"
+    state: started
+    pull: true
+    recreate: true
+    restart_policy: always
+    networks:
+      - name: backend-network
+      - name: proxy-network
+    ports:
+      - "80:80"

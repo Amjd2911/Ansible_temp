@@ -1,0 +1,23 @@
+# First play: Setup Docker and venv (uses system Python)
+- hosts: all
+  gather_facts: true
+  become: true
+
+  roles:
+    - role: docker
+
+# Second play: Deploy containers (uses venv Python)
+- hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    # Tell Ansible modules (docker_*) to use the python from our venv
+    ansible_python_interpreter: /opt/docker_venv/bin/python
+
+  roles:
+    - role: network
+    - role: database
+    - role: app
+    - role: frontend
+    - role: proxy

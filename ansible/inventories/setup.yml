@@ -1,0 +1,11 @@
+all:
+  vars:
+    ansible_user: azureuser
+    ansible_ssh_private_key_file: /Users/antonindudragne/.ssh/Justatestsuppr_key.pem
+    ansible_become: true
+    ansible_become_method: sudo
+    ansible_ssh_extra_args: '-o IdentitiesOnly=yes'
+  children:
+    prod:
+      hosts:
+        4.233.65.1:

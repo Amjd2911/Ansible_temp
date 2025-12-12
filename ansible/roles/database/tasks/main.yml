@@ -1,0 +1,17 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for database
+- name: Launch database container
+  docker_container:
+    name: database
+    image: "amjd2911/tp-devops-database:latest"
+    state: started
+    pull: true
+    recreate: true
+    restart_policy: always
+    networks:
+      - name: db-network
+    env:
+      POSTGRES_DB: "myapp_db"
+      POSTGRES_USER: "app_user"
+      POSTGRES_PASSWORD: "secure_password"
