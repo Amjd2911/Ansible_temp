@@ -1,5 +1,5 @@
 ---
-- name: Create Azure VM with Public IP (Standard SKU)
+- name: Créer une VM Azure avec Public IP (Mode IP Config)
   hosts: localhost
   connection: local
   gather_facts: false
@@ -14,7 +14,6 @@
     nic_name: myNIC
     vm_name: myVM
     admin_username: azureuser
-    # NOTE: En prod, utilise Ansible Vault.
     admin_password: YourSecurePassword123!
 
   tasks:
@@ -42,10 +41,10 @@
         resource_group: "{{ resource_group_name }}"
         name: "{{ public_ip_name }}"
         location: "{{ location }}"
-        sku: Standard            # Fix: Required to bypass Basic quota limit
-        allocation_method: Static # Fix: Required for Standard SKU
+        sku: Standard             # OBLIGATOIRE
+        allocation_method: Static # OBLIGATOIRE avec Standard
 
-    - name: Create Network Security Group (NSG)
+    - name: Create Network Security Group
       azure_rm_securitygroup:
         resource_group: "{{ resource_group_name }}"
         name: "{{ nsg_name }}"
@@ -58,17 +57,21 @@
             priority: 1001
             direction: Inbound
 
-    - name: Create NIC (Link IP & NSG)
+    # C'est ici que la syntaxe change selon ta demande
+    - name: Create NIC with ip_configurations
       azure_rm_networkinterface:
         resource_group: "{{ resource_group_name }}"
         name: "{{ nic_name }}"
+        location: "{{ location }}"
         virtual_network: "{{ vnet_name }}"
         subnet: "{{ subnet_name }}"
-        public_ip_address_name: "{{ public_ip_name }}" # Fix: Correct parameter name
-        security_group: "{{ nsg_name }}"               # Fix: Attach NSG for SSH access
-        location: "{{ location }}"
+        security_group: "{{ nsg_name }}"
+        ip_configurations:
+          - name: default
+            primary: true
+            public_ip_address_name: "{{ public_ip_name }}" # <--- Le paramètre manquant
 
-    - name: Create Virtual Machine
+    - name: Create VM
       azure_rm_virtualmachine:
         resource_group: "{{ resource_group_name }}"
         name: "{{ vm_name }}"
@@ -82,7 +85,3 @@
           sku: '8-stream'
           version: latest
         location: "{{ location }}"
-
-    - name: Output Public IP
-      debug:
-        msg: "Public IP created: {{ public_ip_name }} (Check Azure Portal for exact IP as it is Static Standard)"
